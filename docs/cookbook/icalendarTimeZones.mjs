@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as Temporal from '../../polyfill/lib/temporal.mjs';
 import ICAL from 'ical.js';
 
@@ -279,3 +280,197 @@ class ZonedDateTime {
     return this.toString();
   }
 }
+
+const ianaCalendarEvent = ICAL.parse(`\
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:Zimbra-Calendar-Provider
+BEGIN:VTIMEZONE
+TZID:America/Los_Angeles
+BEGIN:STANDARD
+DTSTART:19710101T020000
+TZOFFSETTO:-0800
+TZOFFSETFROM:-0700
+RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11
+TZNAME:PST
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:19710101T020000
+TZOFFSETTO:-0700
+TZOFFSETFROM:-0800
+RRULE:FREQ=YEARLY;BYDAY=2SU;BYMONTH=3
+TZNAME:PDT
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:44c10eaa-db0b-4223-8653-cf2b63f26326
+RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:Calendar
+DESCRIPTION:desc
+ATTENDEE;CN=XXX;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRU
+ E:mailto:foo@bar.com
+ATTENDEE;CN=XXXX;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TR
+ UE:mailto:x@bar.com
+ORGANIZER;CN=foobar:mailto:x@bar.com
+DTSTART;TZID=America/Los_Angeles:20120911T103000
+DTEND;TZID=America/Los_Angeles:20120911T110000
+STATUS:CONFIRMED
+CLASS:PUBLIC
+TRANSP:OPAQUE
+LAST-MODIFIED:20120911T184851Z
+DTSTAMP:20120911T184851Z
+SEQUENCE:1
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER;RELATED=START:-PT5M
+DESCRIPTION:Reminder
+END:VALARM
+END:VEVENT
+END:VCALENDAR
+`);
+
+const msCalendarEvent = ICAL.parse(`\
+BEGIN:VCALENDAR
+METHOD:REQUEST
+PRODID:Microsoft Exchange Server 2010
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:US Mountain Standard Time
+BEGIN:STANDARD
+DTSTART:16010101T000000
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0700
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:16010101T000000
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0700
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+ORGANIZER;CN=Frank:mailto:frank@example.com
+DESCRIPTION;LANGUAGE=en-US:Some description goes here
+UID:040000008200E00074C2B7101A82F00800000000FA2634575E11D901000000000000000
+ 0100000006D3FFDF37ED86F429B8315DBBE50E4D1
+SUMMARY;LANGUAGE=en-US:Technical Tag-Up
+DTSTART;TZID=US Mountain Standard Time:20221221T090000
+DTEND;TZID=US Mountain Standard Time:20221221T093000
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:20221216T145449Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+SEQUENCE:0
+LOCATION;LANGUAGE=en-US:Virtual - Skype Meeting
+X-MICROSOFT-CDO-APPT-SEQUENCE:0
+X-MICROSOFT-CDO-OWNERAPPTID:2121040890
+X-MICROSOFT-CDO-BUSYSTATUS:TENTATIVE
+X-MICROSOFT-CDO-INTENDEDSTATUS:BUSY
+X-MICROSOFT-CDO-ALLDAYEVENT:FALSE
+X-MICROSOFT-CDO-IMPORTANCE:1
+X-MICROSOFT-CDO-INSTTYPE:0
+X-MICROSOFT-ONLINEMEETINGINFORMATION:{"OnlineMeetingChannelId":null\\,"Onlin
+ eMeetingProvider":3}
+X-MICROSOFT-DONOTFORWARDMEETING:FALSE
+X-MICROSOFT-DISALLOW-COUNTER:FALSE
+X-MICROSOFT-LOCATIONDISPLAYNAME:Virtual - Skype Meeting
+X-MICROSOFT-LOCATIONSOURCE:None
+X-MICROSOFT-LOCATIONS:[{"DisplayName":"Virtual - Skype Meeting"\\,"LocationA
+ nnotation":""\\,"LocationUri":""\\,"LocationStreet":""\\,"LocationCity":""\\,"
+ LocationState":""\\,"LocationCountry":""\\,"LocationPostalCode":""\\,"Locatio
+ nFullAddress":""}]
+BEGIN:VALARM
+DESCRIPTION:REMINDER
+TRIGGER;RELATED=START:-PT15M
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR
+`);
+
+const msCalendarEvent2 = ICAL.parse(`\
+BEGIN:VCALENDAR
+METHOD:REQUEST
+PRODID:Microsoft Exchange Server 2010
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:Pacific Standard Time
+BEGIN:STANDARD
+DTSTART:16010101T020000
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0800
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=1SU;BYMONTH=11
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:16010101T020000
+TZOFFSETFROM:-0800
+TZOFFSETTO:-0700
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=2SU;BYMONTH=3
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+ORGANIZER;CN=Sean:mailto:sean@example.com
+DESCRIPTION;LANGUAGE=en-US:\\nSome description
+UID:040000008200E00074C5B7101A87E00800000000E34E497CF42CD801000000000000000
+ 0100000003EFD63857B13AF41A430D32A1905BE7B
+RECURRENCE-ID;TZID=Pacific Standard Time:20221228T130000
+SUMMARY;LANGUAGE=en-US:Weekly Backlog Review 
+DTSTART;TZID=Pacific Standard Time:20221229T130000
+DTEND;TZID=Pacific Standard Time:20221229T140000
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:20221220T010040Z
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+SEQUENCE:22
+LOCATION;LANGUAGE=en-US:
+X-MICROSOFT-CDO-APPT-SEQUENCE:22
+X-MICROSOFT-CDO-OWNERAPPTID:2120410083
+X-MICROSOFT-CDO-BUSYSTATUS:TENTATIVE
+X-MICROSOFT-CDO-INTENDEDSTATUS:BUSY
+X-MICROSOFT-CDO-ALLDAYEVENT:FALSE
+X-MICROSOFT-CDO-IMPORTANCE:1
+X-MICROSOFT-CDO-INSTTYPE:3
+X-MICROSOFT-DONOTFORWARDMEETING:FALSE
+X-MICROSOFT-DISALLOW-COUNTER:FALSE
+X-MICROSOFT-LOCATIONS:[]
+BEGIN:VALARM
+DESCRIPTION:REMINDER
+TRIGGER;RELATED=START:-PT15M
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR
+`);
+
+[ianaCalendarEvent, msCalendarEvent, msCalendarEvent2].forEach((jcalData) => {
+  const component = new ICAL.Component(jcalData);
+  const event = new ICAL.Event(component.getFirstSubcomponent('vevent'));
+  const instantStart = Temporal.Instant.fromEpochMilliseconds(event.startDate.toUnixTime() * 1000);
+  const zdt = ZonedDateTime.fromInstant(instantStart, event.startDate.zone);
+  const instantEnd = Temporal.Instant.fromEpochMilliseconds(event.endDate.toUnixTime() * 1000);
+  const zdtEnd = ZonedDateTime.fromInstant(instantEnd, event.endDate.zone);
+
+  console.log('--------');
+  console.log(zdt.toString());
+  console.log('fields', zdt.era, zdt.eraYear, zdt.year, zdt.month, zdt.monthCode, zdt.day);
+  console.log(zdt.hour, zdt.minute, zdt.second, zdt.millisecond, zdt.microsecond, zdt.nanosecond);
+  console.log('dayOfWeek', zdt.dayOfWeek);
+  console.log('toPlainDateTime', zdt.toPlainDateTime().toString());
+  console.log('offsetNanoseconds', zdt.offsetNanoseconds);
+  console.log('offset', zdt.offset);
+  console.log('epochMilliseconds', zdt.epochMilliseconds);
+  console.log('epochNanoseconds', zdt.epochNanoseconds);
+  console.log('startOfDay', zdt.startOfDay().toString());
+  console.log('toInstant', zdt.toInstant().toString());
+  console.log('toPlainDate', zdt.toPlainDate().toString());
+  console.log('toPlainTime', zdt.toPlainTime().toString());
+  console.log('withPlainTime', zdt.withPlainTime(Temporal.PlainTime.from('13:37')).toString());
+  console.log('withCalendar', zdt.withCalendar('gregory').toString());
+  console.log('add', zdt.add(Temporal.Duration.from('P1Y3DT2H30M')).toString());
+  console.log('until', zdt.until(zdtEnd).toString());
+  console.log(
+    'use as relativeTo',
+    Temporal.Duration.from('P1M15DT12H').round({ smallestUnit: 'day', relativeTo: zdt }).toString()
+  );
+});
