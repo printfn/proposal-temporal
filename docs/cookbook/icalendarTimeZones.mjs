@@ -69,11 +69,21 @@ class ZonedDateTime {
   // Use this method instead of PlainDateTime.prototype.toZonedDateTime() and
   // PlainDate.prototype.toZonedDateTime()
   static fromPlainDateTime(pdt, timeZone, options) {
-    if (timeZone.tzid) {
+    if (Intl.supportedValuesOf('timeZone').includes(timeZone.tzid)) {
       const temporalZDT = pdt.toZonedDateTime(timeZone.tzid, options);
       return new ZonedDateTime(temporalZDT.epochNanoseconds, timeZone, pdt.calendarId);
     }
-    const icalTime = new ICAL.Time(pdt, timeZone);
+    const icalTime = new ICAL.Time(
+      {
+        year: pdt.year,
+        month: pdt.month,
+        day: pdt.day,
+        hour: pdt.hour,
+        minute: pdt.minute,
+        second: pdt.second
+      },
+      timeZone
+    );
     const epochSeconds = icalTime.toUnixTime(); // apply disambiguation parameter?
     const epochNanoseconds =
       BigInt(epochSeconds) * 1000000000n + BigInt(pdt.millisecond * 1e6 + pdt.microsecond * 1e3 + pdt.nanosecond);
@@ -273,7 +283,7 @@ class ZonedDateTime {
     if (this.#isIANA) {
       return this.#impl.toString(options);
     }
-    throw new Error('not implemented');
+    return this.toPlainDateTime().toString() + `[UNIMPLEMENTED: custom time zone ${this.#timeZone.tzid}]`;
   }
 
   toJSON() {
