@@ -2,15 +2,30 @@
 import * as Temporal from '../../polyfill/lib/temporal.mjs';
 import ICAL from 'ical.js';
 
-// The time zone can either be a named IANA time zone (in which case everything
-// works just like Temporal.ZonedDateTime) or an iCalendar rule-based time zone
+// Example of a wrapper class for Temporal.ZonedDateTime that implements custom
+// time zones.
+// The use case is based on Thunderbird's use of the ical.js library to parse
+// iCalendar data. iCalendar uses VTIMEZONE components which define UTC offset
+// transitions inside the data format. VTIMEZONE can include a TZID field, which
+// may or may not be an IANA time zone ID. If it's an IANA time zone ID,
+// Thunderbird uses the environment's TZDB definition and ignores the rest of
+// the VTIMEZONE (in which case everything works just like
+// Temporal.ZonedDateTime, as we delegate to the this.#impl object). However,
+// Microsoft Exchange often generates TZID strings that aren't IANA IDs, and
+// then Thunderbird falls back to the iCalendar VTIMEZONE definition (in which
+// case we use ical.js to perform the time zone calculations.)
+
 class ZonedDateTime {
+  // #impl: The internal Temporal.ZonedDateTime object. If the VTIMEZONE is an
+  // IANA time zone, its timeZoneId is the VTIMEZONE's TZID, and we delegate all
+  // the operations to it. If not, its timeZoneId is UTC.
   #impl;
-  #timeZone;
-  #isIANA;
+  #timeZone; // The ICAL.Timezone instance.
+  #isIANA; // Convenience flag indicating whether we can delegate to #impl.
 
   // These properties allow the object to be used as a PlainDateTime property
-  // bag if the time zone isn't IANA
+  // bag if the time zone isn't IANA. For example, as a relativeTo parameter in
+  // Duration methods.
   era;
   eraYear;
   year;
@@ -84,7 +99,7 @@ class ZonedDateTime {
       },
       timeZone
     );
-    const epochSeconds = icalTime.toUnixTime(); // apply disambiguation parameter?
+    const epochSeconds = icalTime.toUnixTime(); // TODO: apply disambiguation parameter?
     const epochNanoseconds =
       BigInt(epochSeconds) * 1000000000n + BigInt(pdt.millisecond * 1e6 + pdt.microsecond * 1e3 + pdt.nanosecond);
     return new ZonedDateTime(epochNanoseconds, timeZone, pdt.calendarId);
@@ -98,6 +113,8 @@ class ZonedDateTime {
     if (this.#isIANA) {
       return this.#impl.toPlainDateTime();
     }
+    // this.#impl with a non-IANA time zone uses UTC internally, so we can just
+    // calculate the plain date-time in UTC and add the UTC offset.
     return this.#impl.toPlainDateTime().add({ nanoseconds: this.offsetNanoseconds });
   }
 
@@ -167,6 +184,8 @@ class ZonedDateTime {
       this.#isIANA ||
       (duration.years === 0 && duration.months === 0 && duration.weeks === 0 && duration.days === 0)
     ) {
+      // Adding non-calendar units is independent of time zone, so in that case
+      // we can delegate to this.#impl even in the case of a non-IANA time zone
       const temporalZDT = this.#impl.add(duration, options);
       return new ZonedDateTime(temporalZDT.epochNanoseconds, this.#timeZone, this.#impl.calendarId);
     }
@@ -202,6 +221,8 @@ class ZonedDateTime {
     if (largestUnit === 'year' || largestUnit === 'month' || largestUnit === 'week' || largestUnit === 'day') {
       throw new Error('not implemented');
     }
+    // Non-calendar largestUnit is independent of time zone, so we can delegate
+    // to this.#impl even in the case of a non-IANA time zone
     return this.#impl.until(other.#impl, options);
   }
 
