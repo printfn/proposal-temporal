@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as Temporal from '../../polyfill/lib/temporal.mjs';
 
 /**
@@ -432,3 +433,17 @@ function nepaliToISO({ year: nepaliYear, month: nepaliMonth, day: nepaliDay = 1 
 
   return new Temporal.PlainDate(isoYear, 1, 1, 'iso8601').add({ days: isoDayOfYear });
 }
+
+const today = NepaliPlainDate.fromTemporalPlainDate(Temporal.Now.plainDateISO());
+console.log(today.toString());
+
+const n = NepaliPlainDate.from({ year: 2081, month: 3, day: 11 });
+console.log(n.toString());
+console.log(n.era, n.eraYear, n.year, n.month, n.monthCode, n.day);
+console.log('weekday', n.dayOfWeek, n.daysInWeek);
+console.log('week number', n.weekOfYear, n.yearOfWeek);
+console.log('month', n.daysInMonth, 'year', n.daysInYear, n.monthsInYear);
+console.log('leap year', n.inLeapYear);
+console.log('withCalendar', n.withCalendar('gregory').toString());
+console.log('equals', n.equals(n), n.equals(NepaliPlainDate.from(n)), n.equals(n.withCalendar('iso8601')));
+console.log('toJSON', n.toJSON());
