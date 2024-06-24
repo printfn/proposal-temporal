@@ -215,7 +215,7 @@ class NepaliPlainDate extends Temporal.PlainDate {
   // monthsInYear inherited from Temporal.PlainDate directly, for convenience.
   // There are 12 months in both calendars.
   get inLeapYear() {
-    return this.daysInYear() !== 365;
+    return this.daysInYear !== 365;
   }
 
   // withCalendar inherited from Temporal.PlainDate directly
